@@ -1,0 +1,127 @@
+const fs = require('fs');
+
+var output = {};
+
+//Declaración del arbol
+function Node(val) {
+    this.value = val; // valor del nodo
+    this.children = []; // lista de referencias a los nodos hijos
+}
+
+function Tree() {
+    this.root = null; // referencia al nodo raíz
+}
+
+Tree.prototype.findBFS = function (value) {  
+    var queue = [this.root];  
+    while (queue.length) {
+    var node = queue.shift();    
+    if (node.value === value) {
+        return node;
+    }    
+    for (var i = 0; i < node.children.length; i++) {
+        queue.push(node.children[i]);
+    }
+    }  return null;
+};
+
+
+Tree.prototype.add = function (value, toNodeValue) {  
+    var node = new Node(value);
+    var parent = toNodeValue ? this.findBFS(toNodeValue) : null;  
+    if (parent) {
+        parent.children.push(node);
+    }
+    else if (!this.root) {
+        this.root = node;
+    }
+    else {
+        throw new Error('Root node is already assigned');
+    }
+};
+
+Tree.prototype.remove = function (value) {  // caso especial: si el valor está en el
+    // nodo raíz reseteamos el árbol
+    if (this.root.value === value) {
+      this.root = null;
+    }  var queue = [this.root];  while (queue.length) {
+      var node = queue.shift();    for (var i = 0; i < node.children.length; i++) {
+        if (node.children[i].value === value) {
+          node.children.splice(i, 1);
+        }
+        else {
+          queue.push(node.children[i]);
+        }
+      }
+    }
+};
+//Init of global tree
+var tree = new Tree();
+const root = 'root';
+tree.add(root);
+/////////////////////
+
+
+// Esta funcion esta mal :(
+function createDirectory(params, father = root){
+    // params = params.split("/");
+    console.log(params);
+    if(params.length > 1){
+        father = params.shift();
+        tree.add(params[0], father);
+        // params = params.shift();
+        //createDirectory(params, father);
+    }
+    else{
+        if(father === root){
+            tree.add(params[0], root);
+        }
+        else{
+            tree.add(params[0], father);
+        }
+    }
+}
+
+function commandManager(command){
+    let arr = command.split(" ");
+    
+    //console.log(arr);
+    //LIST
+    if(arr.length === 1 && arr[0] === 'LIST'){
+        console.log('List');
+        // console.log(output);
+        //console.log(tree.findBFS('fruits'))
+        console.log(tree.findBFS(root))
+    }
+    //CREATE
+    else if(arr.length === 2 && arr[0] === 'CREATE'){
+        console.log('Create');
+        createDirectory(arr[1].split("/"));//Validar si viene vacio?
+    }
+    //MOVE
+    else if(arr.length === 3 && arr[0] === 'MOVE'){
+        console.log('Move')
+    }
+    //DELETE
+    else if(arr.length === 2 && arr[0] === 'DELETE'){
+        console.log('Delete')
+    }
+    else{
+        console.error("Unvalid command, please verify your instructions");
+    }
+
+};
+
+function main(){
+    const input = fs.readFileSync('./data/input.txt', 'utf-8');
+    let commands = input.split("\n");
+
+    commands.forEach(command => {
+        command = command.replace("\r", "");
+        //console.log(element);
+        commandManager(command);
+    });
+};
+
+main();
+
