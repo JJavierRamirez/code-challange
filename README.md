@@ -2,7 +2,7 @@
 
 Execute:
 ```
-node files.js
+node index.js
 ```
 
 The input file must be on /data/input.txt. 
